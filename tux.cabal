@@ -22,4 +22,5 @@ executable Tux
                        turtle ==1.2.*,
                        text ==1.2.*,
                        parsec ==3.1.*,
-                       unix ==2.7.*
+                       unix ==2.7.*,
+                       directory ==1.2.*

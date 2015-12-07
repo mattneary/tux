@@ -3,12 +3,15 @@
 
 module System.Tmux
   ( TmuxNoun(..)
-  , listWindows
-  , newSession
+  , TmuxOption(..)
   , windowTarget
   , windowSource
-  , unlinkWindow
+  , listWindows
+  , newSession
   , attachSession
+  , unlinkWindow
+  , linkWindow
+  , runCommand
   ) where
 
 import Turtle
@@ -45,10 +48,11 @@ instance TmuxObject TmuxFormat where
     where formatString = intercalate "\t" $ map (\x -> "#{" ++ x ++ "}") xs
 
 -- | Allow additional tmux parameters to be passed.
-data TmuxOption = Flag String Bool
+data TmuxOption = Flag String | Parameter String String | Argument String
 instance TmuxObject TmuxOption where
-  argList (Flag x True) = [T.pack $ "-" ++ x]
-  argList (Flag _ False) = []
+  argList (Flag x) = [T.pack $ "-" ++ x]
+  argList (Parameter k v) = map T.pack ["-" ++ k, v]
+  argList (Argument x) = [T.pack x]
 
 tmuxStart :: String -> [TmuxArg] -> IO ()
 tmuxStart fn objects =
@@ -71,8 +75,11 @@ listWindows t@(Target _) =
        fmap (\t -> let Right parsedVars = parseOutput vars (T.unpack t)
                    in parsedVars) out
 
-newSession detach s@(Source _) =
-  tmuxCommand "new-session" [MkArg $ Flag "d" detach, MkArg s]
-unlinkWindow t@(Target _) = tmuxCommand "unlink-window" [MkArg t]
+newSession s@(Source _) rest =
+  tmuxCommand "new-session" $ map MkArg rest ++ [MkArg s]
 attachSession t@(Target _) = tmuxStart "attach-session" [MkArg t]
+unlinkWindow t@(Target _) = tmuxCommand "unlink-window" [MkArg t]
+linkWindow s@(Source _) t@(Target _) = tmuxCommand "link-window" [MkArg s, MkArg t]
+runCommand t@(Target _) command =
+  tmuxCommand "send-keys" $ [MkArg t] ++ map (MkArg . Argument) [command, "Enter"]
 

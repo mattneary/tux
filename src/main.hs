@@ -1,6 +1,9 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 import System.Exit
+import Turtle
 
-main = exitSuccess
+main = stdout (inproc "tmux" ["list-windows", "-t", "workspace"] "")
 

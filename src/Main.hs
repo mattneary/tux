@@ -20,10 +20,7 @@ workspaceWindows =
 nextWorkspaceWindow :: IO (Maybe TmuxNoun)
 nextWorkspaceWindow =
   do windows <- workspaceWindows
-     case windows of
-       Just ws ->
-         return . Just $ windowTarget "workspace" $ (maximum ws) + 1
-       otherwise -> return Nothing
+     return $ fmap (\ws -> windowTarget "workspace" $ (maximum ws) + 1) windows
 
 unlinkWorkspaceWindow w = unlinkWindow (windowTarget "workspace" w)
 unlinkWorkspaceWindows =

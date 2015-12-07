@@ -1,5 +1,7 @@
 module Main where
 
+import Control.Monad
+import Data.Maybe
 import System.Tmux
 
 parseInt x = read x :: Int
@@ -14,5 +16,16 @@ nextWorkspaceWindow =
   do windows <- workspaceWindows
      return $ fmap ((+1) . maximum) windows
 
-main = nextWorkspaceWindow >>= (putStrLn . show)
+unlinkWorkspaceWindow w = unlinkWindow (windowTarget "workspace" w)
+unlinkWorkspaceWindows =
+  do Just windows <- workspaceWindows
+     void $ mapM unlinkWorkspaceWindow windows
+
+setupWorkspace =
+  do created <- fmap isJust $ newSession True (Source "workspace")
+     when (not created) unlinkWorkspaceWindows
+
+main =
+  do setupWorkspace
+     attachSession (Target "workspace")
 

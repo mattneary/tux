@@ -4,6 +4,11 @@
 module System.Tmux
   ( TmuxNoun(..)
   , listWindows
+  , newSession
+  , windowTarget
+  , windowSource
+  , unlinkWindow
+  , attachSession
   ) where
 
 import Turtle
@@ -27,11 +32,22 @@ instance TmuxObject TmuxNoun where
   argList (Target n) = ["-t", T.pack n]
   argList (Source n) = ["-s", T.pack n]
 
+windowNoun :: (String, Int) -> String
+windowNoun (s, w) = s ++ ":" ++ (show w)
+windowTarget = curry $ Target . windowNoun
+windowSource = curry $ Source . windowNoun
+
 -- | Allow tmux format strings to be constructed.
 data TmuxFormat = VarList [String]
 instance TmuxObject TmuxFormat where
   argList (VarList xs) = ["-F", T.pack $ formatString]
     where formatString = intercalate "\t" $ map (\x -> "#{" ++ x ++ "}") xs
+
+-- | Allow additional tmux parameters to be passed.
+data TmuxOption = Flag String Bool
+instance TmuxObject TmuxOption where
+  argList (Flag x True) = [T.pack $ "-" ++ x]
+  argList (Flag _ False) = []
 
 tmuxCommand :: Text -> [TmuxArg] -> IO (Maybe Text)
 tmuxCommand fn objects =
@@ -48,4 +64,11 @@ listWindows t@(Target _) =
      return $
        fmap (\t -> let Right parsedVars = parseOutput vars (T.unpack t)
                    in parsedVars) out
+
+newSession detach s@(Source _) =
+  tmuxCommand "new-session" [MkArg $ Flag "d" detach, MkArg s]
+
+unlinkWindow t@(Target _) = tmuxCommand "unlink-window" [MkArg t]
+
+attachSession t@(Target _) = tmuxCommand "attach-session" [MkArg t]
 

@@ -16,6 +16,7 @@ import qualified Data.Text as T
 import Data.List
 
 import System.Tmux.Parse
+import System.Posix.Process as P
 
 -- | A TmuxObject can be reduced to an argList to be passed to tmux.
 class TmuxObject t where
@@ -49,6 +50,11 @@ instance TmuxObject TmuxOption where
   argList (Flag x True) = [T.pack $ "-" ++ x]
   argList (Flag _ False) = []
 
+tmuxStart :: String -> [TmuxArg] -> IO ()
+tmuxStart fn objects =
+  do P.executeFile "tmux" True (fn:concatMap (map T.unpack . getArgs) objects) Nothing
+     return ()
+
 tmuxCommand :: Text -> [TmuxArg] -> IO (Maybe Text)
 tmuxCommand fn objects =
   do (e, t) <- procStrict "tmux" (fn:concatMap getArgs objects) empty
@@ -68,5 +74,5 @@ listWindows t@(Target _) =
 newSession detach s@(Source _) =
   tmuxCommand "new-session" [MkArg $ Flag "d" detach, MkArg s]
 unlinkWindow t@(Target _) = tmuxCommand "unlink-window" [MkArg t]
-attachSession t@(Target _) = tmuxCommand "attach-session" [MkArg t]
+attachSession t@(Target _) = tmuxStart "attach-session" [MkArg t]
 

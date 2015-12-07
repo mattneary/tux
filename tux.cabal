@@ -21,4 +21,5 @@ executable Tux
   build-depends:       base ==4.8.*,
                        turtle ==1.2.*,
                        text ==1.2.*,
-                       parsec ==3.1.*
+                       parsec ==3.1.*,
+                       unix ==2.7.*

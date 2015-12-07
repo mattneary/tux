@@ -17,7 +17,7 @@ nextWorkspaceWindow =
 
 unlinkWorkspaceWindow w = unlinkWindow (windowTarget "workspace" w)
 unlinkWorkspaceWindows =
-  do Just windows <- workspaceWindows
+  do Just (_:windows) <- workspaceWindows
      void $ mapM unlinkWorkspaceWindow windows
 
 setupWorkspace =

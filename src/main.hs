@@ -1,8 +1,6 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Main where
 
-import Turtle
+import System.Tmux
 
-main = stdout (inproc "tmux" ["list-windows", "-t", "workspace"] "")
+main = listWindows (Target "workspace")
 

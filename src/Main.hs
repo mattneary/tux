@@ -5,7 +5,6 @@ import Data.Maybe
 import System.Tmux
 
 parseInt x = read x :: Int
-
 workspaceWindows :: IO (Maybe [Int])
 workspaceWindows =
   do windows <- listWindows (Target "workspace")
@@ -23,7 +22,7 @@ unlinkWorkspaceWindows =
 
 setupWorkspace =
   do created <- fmap isJust $ newSession True (Source "workspace")
-     when (not created) unlinkWorkspaceWindows
+     unless created unlinkWorkspaceWindows
 
 main =
   do setupWorkspace

@@ -40,7 +40,7 @@ windowSource = curry $ Source . windowNoun
 -- | Allow tmux format strings to be constructed.
 data TmuxFormat = VarList [String]
 instance TmuxObject TmuxFormat where
-  argList (VarList xs) = ["-F", T.pack $ formatString]
+  argList (VarList xs) = ["-F", T.pack formatString]
     where formatString = intercalate "\t" $ map (\x -> "#{" ++ x ++ "}") xs
 
 -- | Allow additional tmux parameters to be passed.
@@ -67,8 +67,6 @@ listWindows t@(Target _) =
 
 newSession detach s@(Source _) =
   tmuxCommand "new-session" [MkArg $ Flag "d" detach, MkArg s]
-
 unlinkWindow t@(Target _) = tmuxCommand "unlink-window" [MkArg t]
-
 attachSession t@(Target _) = tmuxCommand "attach-session" [MkArg t]
 

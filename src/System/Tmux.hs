@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GADTs #-}
 
 module System.Tmux where
 
@@ -8,19 +9,31 @@ import Data.List
 
 import System.Tmux.Parse
 
-data TmuxObject = Target String
-                | Source String
-                | VarListF [String]
+-- | A TmuxObject can be reduced to an argList to be passed to tmux.
+class TmuxObject t where
+  argList :: t -> [Text]
 
-argList (Target n) = ["-t", T.pack n]
-argList (Source n) = ["-s", T.pack n]
-argList (VarListF xs) =
-  let formatString = intercalate "\t" $ map (\x -> "#{" ++ x ++ "}") xs
-  in ["-F", T.pack $ formatString]
+-- | A TmuxArg wraps a TmuxObject, hiding which sort it is.
+data TmuxArg where
+  MkArg :: (TmuxObject t) => t -> TmuxArg
+getArgs (MkArg a) = argList a
 
-tmuxCommand :: Text -> [TmuxObject] -> IO ExitCode
-tmuxCommand fn objects = proc "tmux" (fn:(concatMap argList objects)) empty
+-- | Allow tmux entities to be referenced by name.
+data TmuxNoun = Target String | Source String
+instance TmuxObject TmuxNoun where
+  argList (Target n) = ["-t", T.pack n]
+  argList (Source n) = ["-s", T.pack n]
 
-listWindows :: TmuxObject -> IO ExitCode
-listWindows t@(Target _) = tmuxCommand "list-windows" [t, VarListF ["window_index", "window_name"]]
+-- | Allow tmux format strings to be constructed.
+data TmuxFormat = VarList [String]
+instance TmuxObject TmuxFormat where
+  argList (VarList xs) = ["-F", T.pack $ formatString]
+    where formatString = intercalate "\t" $ map (\x -> "#{" ++ x ++ "}") xs
+
+tmuxCommand :: Text -> [TmuxArg] -> IO ExitCode
+tmuxCommand fn objects = proc "tmux" (fn:concatMap getArgs objects) empty
+
+-- | A wrapper of `tmux list-windows -t XXX`.
+listWindows :: TmuxNoun -> IO ExitCode
+listWindows t@(Target _) = tmuxCommand "list-windows" [MkArg t, MkArg $ VarList ["window_index", "window_name"]]
 

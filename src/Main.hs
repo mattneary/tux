@@ -4,15 +4,15 @@ import System.Tmux
 
 parseInt x = read x :: Int
 
-workspaceWindows :: IO [Int]
+workspaceWindows :: IO (Maybe [Int])
 workspaceWindows =
   do windows <- listWindows (Target "workspace")
-     return $ map (parseInt . snd . head) windows
+     return $ fmap (map (parseInt . snd . head)) windows
 
-nextWorkspaceWindow :: IO Int
+nextWorkspaceWindow :: IO (Maybe Int)
 nextWorkspaceWindow =
   do windows <- workspaceWindows
-     return $ (maximum windows) + 1
+     return $ fmap ((+1) . maximum) windows
 
 main = nextWorkspaceWindow >>= (putStrLn . show)
 

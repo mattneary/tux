@@ -33,14 +33,19 @@ instance TmuxObject TmuxFormat where
   argList (VarList xs) = ["-F", T.pack $ formatString]
     where formatString = intercalate "\t" $ map (\x -> "#{" ++ x ++ "}") xs
 
-tmuxCommand :: Text -> [TmuxArg] -> IO Text
-tmuxCommand fn objects = fmap snd $ procStrict "tmux" (fn:concatMap getArgs objects) empty
+tmuxCommand :: Text -> [TmuxArg] -> IO (Maybe Text)
+tmuxCommand fn objects =
+  do (e, t) <- procStrict "tmux" (fn:concatMap getArgs objects) empty
+     return (if e == ExitSuccess
+             then Just t
+             else Nothing)
 
 -- | A wrapper of `tmux list-windows -t XXX`.
-listWindows :: TmuxNoun -> IO [[(String, String)]]
+listWindows :: TmuxNoun -> IO (Maybe [[(String, String)]])
 listWindows t@(Target _) =
   do let vars = ["window_index", "window_name"]
      out <- tmuxCommand "list-windows" [MkArg t, MkArg $ VarList vars]
-     let Right parsedVars = parseOutput vars (T.unpack out)
-     return parsedVars
+     return $
+       fmap (\t -> let Right parsedVars = parseOutput vars (T.unpack t)
+                   in parsedVars) out
 

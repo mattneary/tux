@@ -34,6 +34,10 @@ tmuxCommand :: Text -> [TmuxArg] -> IO Text
 tmuxCommand fn objects = fmap snd $ procStrict "tmux" (fn:concatMap getArgs objects) empty
 
 -- | A wrapper of `tmux list-windows -t XXX`.
-listWindows :: TmuxNoun -> IO Text
-listWindows t@(Target _) = tmuxCommand "list-windows" [MkArg t, MkArg $ VarList ["window_index", "window_name"]]
+listWindows :: TmuxNoun -> IO [[(String, String)]]
+listWindows t@(Target _) =
+  do let vars = ["window_index", "window_name"]
+     out <- tmuxCommand "list-windows" [MkArg t, MkArg $ VarList vars]
+     let Right parsedVars = parseOutput vars (T.unpack out)
+     return parsedVars
 

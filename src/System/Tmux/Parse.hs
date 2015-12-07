@@ -1,4 +1,4 @@
-module System.Tmux.Parse where
+module System.Tmux.Parse (parseOutput) where
 
 import Text.ParserCombinators.Parsec
 

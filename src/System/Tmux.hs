@@ -1,7 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
 
-module System.Tmux where
+module System.Tmux
+  ( TmuxNoun(..)
+  , listWindows
+  ) where
 
 import Turtle
 import qualified Data.Text as T

@@ -75,11 +75,11 @@ listWindows t@(Target _) =
        fmap (\t -> let Right parsedVars = parseOutput vars (T.unpack t)
                    in parsedVars) out
 
-newSession s@(Source _) rest =
-  tmuxCommand "new-session" $ map MkArg rest ++ [MkArg s]
+newSession options s@(Source _) =
+  tmuxCommand "new-session" $ map MkArg options ++ [MkArg s]
 attachSession t@(Target _) = tmuxStart "attach-session" [MkArg t]
 unlinkWindow t@(Target _) = tmuxCommand "unlink-window" [MkArg t]
 linkWindow s@(Source _) t@(Target _) = tmuxCommand "link-window" [MkArg s, MkArg t]
-runCommand t@(Target _) command =
+runCommand command t@(Target _) =
   tmuxCommand "send-keys" $ [MkArg t] ++ map (MkArg . Argument) [command, "Enter"]
 

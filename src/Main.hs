@@ -27,14 +27,16 @@ unlinkWorkspaceWindows =
   do Just (_:windows) <- workspaceWindows
      void $ mapM unlinkWorkspaceWindow windows
 
+headlessSession options = newSession $ [Flag "d"] ++ options
+
 setupServer =
-  do created <- fmap isJust $ newSession (Source "server") [Flag "d", Parameter "c" projectDir]
-     when created (void $ runCommand (Target "server") "./manage.py runserver")
+  do created <- fmap isJust $  headlessSession [Parameter "c" projectDir] (Source "server")
+     when created (void $ runCommand "./manage.py runserver" (Target "server"))
      Just nextWindow <- nextWorkspaceWindow
      linkWindow (windowSource "server" 0) nextWindow
 
 setupWorkspace =
-  do created <- fmap isJust $ newSession (Source "workspace") [Flag "d", Parameter "c" rootDir]
+  do created <- fmap isJust $ headlessSession [Parameter "c" rootDir] (Source "workspace")
      unless created unlinkWorkspaceWindows
      setupServer
 

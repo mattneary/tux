@@ -3,7 +3,11 @@ module Main where
 import Control.Monad
 import Data.Maybe
 import System.Directory
+import System.Environment
+import System.Exit
+import System.FilePath.Posix
 import System.IO.Unsafe
+import qualified Config
 
 import System.Tmux
 
@@ -29,18 +33,36 @@ unlinkWorkspaceWindows =
 
 headlessSession options = newSession $ [Flag "d"] ++ options
 
-setupServer =
-  do created <- fmap isJust $  headlessSession [Parameter "c" projectDir] (Source "server")
-     when created (void $ runCommand "./manage.py runserver" (Target "server"))
+setupCommand target command = runCommand (Config.command command) target
+setupFromConfig rootPath cfg =
+  do let windowName = Config.name cfg
+     created <- fmap isJust $
+       headlessSession
+         [Parameter "c" (rootPath </> (fromMaybe "" $ Config.rootPath cfg))]
+         (Source windowName)
+     when created (void $ mapM (setupCommand $ Target windowName) (Config.commands cfg))
      Just nextWindow <- nextWorkspaceWindow
-     linkWindow (windowSource "server" 0) nextWindow
+     linkWindow (windowSource windowName 0) nextWindow
 
-setupWorkspace =
-  do created <- fmap isJust $ headlessSession [Parameter "c" rootDir] (Source "workspace")
+setupWorkspace rootPath cfgs =
+  do created <- fmap isJust $ headlessSession [Parameter "c" rootPath] (Source "workspace")
      unless created unlinkWorkspaceWindows
-     setupServer
+     void $ mapM (setupFromConfig rootPath) cfgs
+
+getConfigFile :: [String] -> IO (Maybe (String, Config.Configuration))
+getConfigFile [] =
+  do cwd <- getCurrentDirectory
+     fmap (fmap $ (,) cwd) $ Config.getConfig $ cwd </> ".tux.json"
+getConfigFile [file] =
+  do path <- canonicalizePath $ file
+     fmap (fmap $ (,) path) $ Config.getConfig $ path </> ".tux.json"
 
 main =
-  do setupWorkspace
+  do cfg <- getArgs >>= getConfigFile
+     when (isNothing cfg)
+          (do putStrLn "Invalid config file."
+              exitFailure)
+     let Just (root, c) = cfg
+     setupWorkspace root [c]
      attachSession (Target "workspace")
 

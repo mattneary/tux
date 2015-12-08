@@ -45,7 +45,7 @@ setupWorkspace rootPath cfgs =
      void $ mapM setupFromConfig cfgs
 
 getRoot [] = getCurrentDirectory
-getRoot [path] = canonicalizePath $ path
+getRoot [path] = canonicalizePath path
 
 main =
   do rootPath <- getArgs >>= getRoot

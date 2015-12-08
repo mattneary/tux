@@ -6,14 +6,9 @@ import System.Directory
 import System.Environment
 import System.Exit
 import System.FilePath.Posix
-import System.IO.Unsafe
 import qualified Config
 
 import System.Tmux
-
--- | TODO: Just being unsafe and lazy for now!
-rootDir = (unsafePerformIO getHomeDirectory) ++ "/Programs/kensho"
-projectDir = rootDir ++ "/projects/zentreefish/app"
 
 parseInt x = read x :: Int
 workspaceWindows :: IO (Maybe [Int])

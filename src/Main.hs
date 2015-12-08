@@ -29,7 +29,7 @@ unlinkWorkspaceWindows =
 headlessSession options = newSession $ [Flag "d"] ++ options
 
 setupCommand target command = runCommand (Config.command command) target
-setupFromConfig rootPath cfg =
+setupFromConfig (Config.Process rootPath cfg) =
   do let windowName = Config.name cfg
      created <- fmap isJust $
        headlessSession
@@ -42,22 +42,18 @@ setupFromConfig rootPath cfg =
 setupWorkspace rootPath cfgs =
   do created <- fmap isJust $ headlessSession [Parameter "c" rootPath] (Source "workspace")
      unless created unlinkWorkspaceWindows
-     void $ mapM (setupFromConfig rootPath) cfgs
+     void $ mapM setupFromConfig cfgs
 
-getConfigFile :: [String] -> IO (Maybe (String, Config.Configuration))
-getConfigFile [] =
-  do cwd <- getCurrentDirectory
-     fmap (fmap $ (,) cwd) $ Config.getConfig $ cwd </> ".tux.json"
-getConfigFile [file] =
-  do path <- canonicalizePath $ file
-     fmap (fmap $ (,) path) $ Config.getConfig $ path </> ".tux.json"
+getRoot [] = getCurrentDirectory
+getRoot [path] = canonicalizePath $ path
 
 main =
-  do cfg <- getArgs >>= getConfigFile
+  do rootPath <- getArgs >>= getRoot
+     cfg <- Config.getProcess rootPath
      when (isNothing cfg)
           (do putStrLn "Invalid config file."
               exitFailure)
-     let Just (root, c) = cfg
-     setupWorkspace root [c]
+     let Just c = cfg
+     setupWorkspace rootPath [c]
      attachSession (Target "workspace")
 

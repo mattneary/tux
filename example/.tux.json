@@ -3,5 +3,6 @@
   "rootPath": ".",
   "commands": [{
     "command": "echo 1"
-  }]
+  }],
+  "children": ["./nested"]
 }

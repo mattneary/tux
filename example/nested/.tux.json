@@ -1,0 +1,7 @@
+{
+  "name": "example2",
+  "rootPath": ".",
+  "commands": [{
+    "command": "echo 2"
+  }]
+}

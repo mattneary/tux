@@ -5,10 +5,11 @@ module Config
   , Command(..)
   , ProcessEnv(..)
   , getConfig
-  , getProcess
+  , getProcesses
   ) where
 
 import Data.Aeson
+import Data.Maybe
 import qualified Data.ByteString.Lazy.Char8 as B
 import GHC.Generics
 import System.Directory
@@ -28,6 +29,8 @@ data Configuration = Configuration {
 } deriving (Generic, Show)
 instance FromJSON Configuration
 
+getChildren = concat . maybeToList . children
+
 data ProcessEnv = Process { procRoot :: String, procConfig :: Configuration }
 
 getConfig :: String -> IO (Maybe Configuration)
@@ -42,4 +45,11 @@ getProcess :: String -> IO (Maybe ProcessEnv)
 getProcess path =
   do config <- getConfig $ path </> ".tux.json"
      return $ Process path `fmap` config
+
+getProcesses :: String -> IO [ProcessEnv]
+getProcesses path =
+  do roots <- fmap maybeToList $ getProcess path
+     let children = map (path </>) $ concatMap (getChildren . procConfig) roots
+     ancestors <- fmap concat . sequence $ map getProcesses children
+     return $ roots ++ ancestors
 

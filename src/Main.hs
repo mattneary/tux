@@ -49,11 +49,10 @@ getRoot [path] = canonicalizePath path
 
 main =
   do rootPath <- getArgs >>= getRoot
-     cfg <- Config.getProcess rootPath
-     when (isNothing cfg)
+     ps <- Config.getProcesses rootPath
+     when (null ps)
           (do putStrLn "Invalid config file."
               exitFailure)
-     let Just c = cfg
-     setupWorkspace rootPath [c]
+     setupWorkspace rootPath ps
      attachSession (Target "workspace")
 

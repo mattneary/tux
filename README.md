@@ -9,6 +9,15 @@ $ cabal install
 $ cabal run [args...]
 ```
 
+## Why?
+
+Tux ensures that you can instantly spin up and organize all of your common
+shell processes. Importantly, it adds a layer of indirection between the
+processes you are working with and the full set of those which are running. Tux
+is centered around a workspace into which your current processes are linked.
+When you run tux it spins up only those processes which are not yet running and
+then populates your workspace with the ones you need.
+
 ## Usage
 
 Tux configures tmux sessions based on a tree of `.tux.json` files, with the

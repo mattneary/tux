@@ -16,6 +16,7 @@ module System.Tmux
   , runCommand
   , renameWindow
   , splitWindow
+  , setVerticalLayout
   ) where
 
 import Turtle
@@ -92,7 +93,8 @@ attachSession t@(Target _) = tmuxStart "attach-session" [MkArg t]
 unlinkWindow t@(Target _) = tmuxCommand "unlink-window" [MkArg t]
 renameWindow name t@(Target _) = tmuxCommand "rename-window" [MkArg t, MkArg $ Argument name]
 linkWindow s@(Source _) t@(Target _) = tmuxCommand "link-window" [MkArg s, MkArg t]
-splitWindow t@(Target _) = tmuxCommand "split-window" [MkArg t]
+splitWindow options t@(Target _) = tmuxCommand "split-window" $ map MkArg options ++ [MkArg t]
 runCommand command t@(Target _) =
   tmuxCommand "send-keys" $ [MkArg t] ++ map (MkArg . Argument) [command, "Enter"]
+setVerticalLayout t@(Target _) = tmuxCommand "select-layout" $ [MkArg $ Argument "even-vertical"]
 

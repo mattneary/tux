@@ -29,19 +29,20 @@ unlinkWorkspaceWindows =
 headlessSession options = newSession $ [Flag "d"] ++ options
 
 setupCommand target command = runCommand (Config.command command) target
-addCommandWindow session pane command =
-  do splitWindow $ paneTarget session 0 pane
+addCommandWindow rootPath session pane command =
+  do let path = rootPath </> (fromMaybe "" $ Config.path command)
+     splitWindow [Parameter "c" $ path] $ paneTarget session 0 pane
      setupCommand (paneTarget session 0 $ pane + 1) command
 setupFromConfig (Config.Process rootPath cfg) =
   do let windowName = Config.name cfg
+     let firstPath = rootPath </> (fromMaybe "" $ Config.rootPath cfg)
      created <- fmap isJust $
-       headlessSession
-         [Parameter "c" (rootPath </> (fromMaybe "" $ Config.rootPath cfg))]
-         (Source windowName)
+       headlessSession [Parameter "c" firstPath] (Source windowName)
      when created
           (do let (first:rest) = Config.commands cfg
               setupCommand (Target windowName) first
-              mapM (uncurry $ addCommandWindow windowName) $ zip [0..] rest
+              mapM (uncurry $ addCommandWindow firstPath windowName) $ zip [0..] rest
+              setVerticalLayout $ Target windowName
               void $ renameWindow windowName $ Target windowName)
      Just nextWindow <- nextWorkspaceWindow
      linkWindow (windowSource windowName 0) nextWindow

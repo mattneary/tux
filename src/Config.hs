@@ -11,6 +11,7 @@ module Config
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as B
 import GHC.Generics
+import System.Directory
 import System.FilePath.Posix
 
 data Command = Command {
@@ -31,8 +32,11 @@ data ProcessEnv = Process { procRoot :: String, procConfig :: Configuration }
 
 getConfig :: String -> IO (Maybe Configuration)
 getConfig file =
-  do cfg <- B.readFile file
-     return $ (decode cfg :: Maybe Configuration)
+  do exists <- doesFileExist file
+     if exists then get file else fail
+     where get file = do cfg <- B.readFile file
+                         return $ (decode cfg :: Maybe Configuration)
+           fail = return Nothing
 
 getProcess :: String -> IO (Maybe ProcessEnv)
 getProcess path =

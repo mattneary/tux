@@ -24,6 +24,6 @@ executable Tux
                        parsec ==3.1.*,
                        unix ==2.7.*,
                        directory ==1.2.*,
-                       aeson ==0.10.*,
                        bytestring ==0.10.*,
-                       filepath ==1.4.*
+                       filepath ==1.4.*,
+                       yaml ==0.8.*

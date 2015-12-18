@@ -9,10 +9,10 @@ module Config
   , getProcesses'
   ) where
 
-import Data.Aeson
+import Data.Yaml
 import Data.List
 import Data.Maybe
-import qualified Data.ByteString.Lazy.Char8 as B
+import qualified Data.ByteString as B
 import GHC.Generics
 import System.Directory
 import System.FilePath.Posix
@@ -50,7 +50,7 @@ getConfig file =
 
 getProcess :: String -> IO (Maybe ProcessEnv)
 getProcess path =
-  do config <- getConfig $ path </> ".tux.json"
+  do config <- getConfig $ path </> ".tux.yml"
      return $ Process path `fmap` config
 
 getProcesses :: String -> IO [ProcessEnv]

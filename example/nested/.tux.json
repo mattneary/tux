@@ -1,7 +1,0 @@
-{
-  "name": "git",
-  "rootPath": ".",
-  "commands": [{
-    "command": "git log --oneline"
-  }]
-}

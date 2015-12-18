@@ -1,0 +1,8 @@
+name: server
+rootPath: ..
+commands:
+  - command: serve 8080
+  - command: echo 'Running server'
+    path: ../../
+  - command: echo 'Third command'
+children: [./nested]

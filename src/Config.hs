@@ -35,6 +35,7 @@ data ProcessEnv = Process { procRoot :: String, procConfig :: Configuration }
 
 getConfig :: String -> IO (Maybe Configuration)
 getConfig file =
+  -- Return the specified config file if it exists and parses.
   do exists <- doesFileExist file
      if exists then get file else fail
      where get file = do cfg <- B.readFile file
@@ -48,6 +49,7 @@ getProcess path =
 
 getProcesses :: String -> IO [ProcessEnv]
 getProcesses path =
+  -- Parse the root process, crawl all of its children, and return the whole tree.
   do roots <- fmap maybeToList $ getProcess path
      let children = map (path </>) $ concatMap (getChildren . procConfig) roots
      ancestors <- fmap concat . sequence $ map getProcesses children

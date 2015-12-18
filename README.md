@@ -36,11 +36,11 @@ Below is an example tux node.
 ```js
 {
   "name": "server",
-  "rootpath": ".",
+  "rootPath": ".",
   "commands": [{
     "command": "serve 8080"
   }, {
-    "command": "echo 'running server'",
+    "command": "echo 'Running server'",
     "path": "../../"
   }],
   "children": ["./nested"]

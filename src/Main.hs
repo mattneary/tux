@@ -65,7 +65,7 @@ getRoot [path] = canonicalizePath path
 main =
   do rootPath <- getArgs >>= getRoot
      -- Crawl the selected process tree and ensure that there are processes to be run.
-     ps <- Config.getProcesses rootPath
+     ps <- Config.getProcesses' rootPath
      when (null ps)
           (do putStrLn "Invalid config file."
               exitFailure)

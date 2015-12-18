@@ -6,9 +6,11 @@ module Config
   , ProcessEnv(..)
   , getConfig
   , getProcesses
+  , getProcesses'
   ) where
 
 import Data.Aeson
+import Data.List
 import Data.Maybe
 import qualified Data.ByteString.Lazy.Char8 as B
 import GHC.Generics
@@ -33,6 +35,10 @@ getChildren = concat . maybeToList . children
 
 data ProcessEnv = Process { procRoot :: String, procConfig :: Configuration }
 
+instance Eq ProcessEnv where
+  Process _ (Configuration m _ _ _) == Process _ (Configuration n _ _ _) =
+    m == n
+
 getConfig :: String -> IO (Maybe Configuration)
 getConfig file =
   -- Return the specified config file if it exists and parses.
@@ -54,4 +60,6 @@ getProcesses path =
      let children = map (path </>) $ concatMap (getChildren . procConfig) roots
      ancestors <- fmap concat . sequence $ map getProcesses children
      return $ roots ++ ancestors
+
+getProcesses' = fmap nub . getProcesses
 

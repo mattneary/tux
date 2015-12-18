@@ -25,11 +25,12 @@ root node being either in the current directory or in the path provided as
 argument to tux.
 
 A tux node points to other nodes through its `children` property.
-Additionally, a tux node takes a `name`, a `rootPath` and `commands`. Its
-`rootPath` and `children` are optional.
+Additionally, a tux node takes a `name`, a `rootPath` and `commands`, but its
+`rootPath` and `children` are optional. A tux command is an object with a
+`command` property and optionally a `path` property.
 
-A tux command is an object with a `command` property and optionally a `path`
-property.
+A node's `rootPath` is the path relative to which all commands are run. This
+path is itself relative to the node file; child references are too.
 
 Below is an example tux node.
 

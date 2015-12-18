@@ -1,6 +1,6 @@
 {
   "name": "server",
-  "rootPath": ".",
+  "rootPath": "..",
   "commands": [{
     "command": "serve 8080"
   }, {

@@ -12,6 +12,7 @@ module System.Tmux
   , unlinkWindow
   , linkWindow
   , runCommand
+  , renameWindow
   ) where
 
 import Turtle
@@ -79,6 +80,7 @@ newSession options s@(Source _) =
   tmuxCommand "new-session" $ map MkArg options ++ [MkArg s]
 attachSession t@(Target _) = tmuxStart "attach-session" [MkArg t]
 unlinkWindow t@(Target _) = tmuxCommand "unlink-window" [MkArg t]
+renameWindow name t@(Target _) = tmuxCommand "rename-window" [MkArg t, MkArg $ Argument name]
 linkWindow s@(Source _) t@(Target _) = tmuxCommand "link-window" [MkArg s, MkArg t]
 runCommand command t@(Target _) =
   tmuxCommand "send-keys" $ [MkArg t] ++ map (MkArg . Argument) [command, "Enter"]

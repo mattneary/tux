@@ -35,7 +35,9 @@ setupFromConfig (Config.Process rootPath cfg) =
        headlessSession
          [Parameter "c" (rootPath </> (fromMaybe "" $ Config.rootPath cfg))]
          (Source windowName)
-     when created (void $ mapM (setupCommand $ Target windowName) (Config.commands cfg))
+     when created
+          (do mapM (setupCommand $ Target windowName) (Config.commands cfg)
+              void $ renameWindow windowName $ Target windowName)
      Just nextWindow <- nextWorkspaceWindow
      linkWindow (windowSource windowName 0) nextWindow
 

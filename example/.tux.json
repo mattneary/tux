@@ -1,8 +1,10 @@
 {
-  "name": "example",
+  "name": "server",
   "rootPath": ".",
   "commands": [{
-    "command": "echo 1"
+    "command": "serve 8080"
+  }, {
+    "command": "echo 'Running server'"
   }],
   "children": ["./nested"]
 }

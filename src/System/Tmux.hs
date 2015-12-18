@@ -6,6 +6,8 @@ module System.Tmux
   , TmuxOption(..)
   , windowTarget
   , windowSource
+  , paneTarget
+  , paneSource
   , listWindows
   , newSession
   , attachSession
@@ -13,6 +15,7 @@ module System.Tmux
   , linkWindow
   , runCommand
   , renameWindow
+  , splitWindow
   ) where
 
 import Turtle
@@ -37,10 +40,17 @@ instance TmuxObject TmuxNoun where
   argList (Target n) = ["-t", T.pack n]
   argList (Source n) = ["-s", T.pack n]
 
-windowNoun :: (String, Int) -> String
+type WindowId = (String, Int)
+type PaneId = (WindowId, Int)
+windowNoun :: WindowId -> String
 windowNoun (s, w) = s ++ ":" ++ (show w)
+paneNoun :: PaneId -> String
+paneNoun (sw, p) = (windowNoun sw) ++ "." ++ (show p)
 windowTarget = curry $ Target . windowNoun
 windowSource = curry $ Source . windowNoun
+curry2 = curry . curry
+paneTarget = curry2 $ Target . paneNoun
+paneSource = curry2 $ Source . paneNoun
 
 -- | Allow tmux format strings to be constructed.
 data TmuxFormat = VarList [String]
@@ -82,6 +92,7 @@ attachSession t@(Target _) = tmuxStart "attach-session" [MkArg t]
 unlinkWindow t@(Target _) = tmuxCommand "unlink-window" [MkArg t]
 renameWindow name t@(Target _) = tmuxCommand "rename-window" [MkArg t, MkArg $ Argument name]
 linkWindow s@(Source _) t@(Target _) = tmuxCommand "link-window" [MkArg s, MkArg t]
+splitWindow t@(Target _) = tmuxCommand "split-window" [MkArg t]
 runCommand command t@(Target _) =
   tmuxCommand "send-keys" $ [MkArg t] ++ map (MkArg . Argument) [command, "Enter"]
 
